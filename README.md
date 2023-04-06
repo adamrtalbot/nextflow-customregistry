@@ -9,7 +9,7 @@ We can specify a custom container registry using the Nextflow config `docker.reg
 
 The [main.nf](main.nf) file contains two processes, both of which run in the biocontainers FASTQC docker container (v0.11.9). One process, TASK_FULLURL uses a docker container specified with a full URL, `quay.io/biocontainers/fastqc:0.11.9--0`. The second, TASK_CUSTOMREGISTRY uses a container specified by name, `biocontainers/fastqc:0.11.9--0`.
 
-The shell script of each process doesn't run FASTQC, it runs a simple bash script to extract the full URL of the Docker container and writes it to a file. This are gathered and written to `images.txt`.
+The shell script of each process doesn't run FASTQC, it runs a simple bash script to extract the full URL of the Docker container and writes it to a file. These are gathered and written to `images.txt`.
 
 ## Default Operation
 
