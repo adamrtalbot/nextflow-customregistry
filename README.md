@@ -1,66 +1,99 @@
 # Nextflow Custom Container Registry
 
-We can specify a custom container registry using the Nextflow config `docker.registry`. This behaves the same as the default container registry when running `docker pull`, i.e.:
- - Pulling a container with a simple name will result in pulling the container from the default registry
- - Using a fully qualified container name will result in pulling the container from the specified registry
- - By default, Dockerhub (docker.io) is the registry URL.
+This repo highlights how we can change the container definiton in nf-core modules to make them more flexible to other docker registries. At the moment, the full path to the container is hard-coded in the modules which means the only way to override this behaviour is by using a custom config file that overwrites the container definition for all processes in the pipeline.
 
-## Overview of Code
+However, we can specify a custom container registry using the Nextflow config `docker.registry` option (default: `docker.io`). This behaves in the same way as the default container registry when running `docker pull`, i.e.:
 
-The [main.nf](main.nf) file contains two processes, both of which run in the biocontainers FASTQC docker container (v0.11.9). One process, TASK_FULLURL uses a docker container specified with a full URL, `quay.io/biocontainers/fastqc:0.11.9--0`. The second, TASK_CUSTOMREGISTRY uses a container specified by name, `biocontainers/fastqc:0.11.9--0`.
+## Repo contents
 
-The shell script of each process doesn't run FASTQC, it runs a simple bash script to extract the full URL of the Docker container and writes it to a file. This are gathered and written to `images.txt`.
+- [main.nf](main.nf) contains a single process that prints the value of `docker.registry` and the resolved container path to stdout.
+- [nextflow.config](nextflow.config) initialises the appropriate settings for `docker`.
+- [custom.config](custom.config) contains a process selector to highlight how we can override the default container used by the pipeline via custom configuration.
+- [run.sh](run.sh) contains a series of commands to show what happens when we use different permutations to change the default container used by the pipeline via different registries.
 
-## Default Operation
+## Running the tests
 
-By default, `docker.io` is the URL for the container registry. In the workflow, we are trying to use the docker image `biocontainers/fastqc:0.11.9--0` however this does exist on Dockerhub. If we run the workflow we will get an error:
+If you clone this repo locally and `cd` into it, you should just need to execute `./run.sh` to run all of the different test permutations. 
 
-```
-nextflow run .
+The output from each of the commands in `run.sh` are listed below:
 
-Command error:
-  Unable to find image 'biocontainers/fastqc:0.11.9--0' locally
-  docker: Error response from daemon: manifest for biocontainers/fastqc:0.11.9--0 not found: manifest unknown: manifest unknown.
-  See 'docker run --help'.
-```
+- :x: `nextflow run .`
 
-We could write a correctly specified Docker container on docker.io or we need to provide a default registry by setting `docker.registry`.
+    This test is expected to fail because `docker.registry = null` by default and the container won't be found.
 
-## Quay.io
+    ```console
+    N E X T F L O W  ~  version 23.04.0
+    Launching `./main.nf` [chaotic_torricelli] DSL2 - revision: e19cf9f99d
+    executor >  local (1)
+    [d2/684d87] process > ECHO_CONTAINER [  0%] 0 of 1
+    executor >  local (1)
+    [d2/684d87] process > ECHO_CONTAINER [100%] 1 of 1, failed: 1 ✘
+    ERROR ~ Error executing process > 'ECHO_CONTAINER'
 
-If we use `-profile quay` we set the `docker.registry = quay.io` (see the [config](nextflow.config)). When we run with this profile we should get correct running:
+    Caused by:
+      Process `ECHO_CONTAINER` terminated with an error exit status (125)
 
-```
-nextflow run . -profile quay
+    Command executed:
 
-N E X T F L O W  ~  version 22.10.7
-Launching `./main.nf` [backstabbing_franklin] DSL2 - revision: 9864d8a662
-[a7/9f498e] Submitted process > TASK_FULLURL (1.task)
-[71/5e1ba0] Submitted process > TASK_CUSTOMREGISTRY (1.task.custom)
-```
+      echo docker.registry = null
+      echo container uri   = $(grep 'docker run' .command.run | tr ' ' '\n' | grep fastqc:0.11.9--0)
 
-If we look in the images.txt file created:
-```
-TASK_CUSTOMREGISTRY,quay.io/biocontainers/fastqc:0.11.9--0
-TASK_FULLURL,quay.io/biocontainers/fastqc:0.11.9--0
-```
+    Command exit status:
+      125
 
-## AWS 
+    Command output:
+      (empty)
 
-If we set the `-profile ecr` we now set `docker.registry` to the public AWS ECR, `public.ecr.aws`. When running the two processes, the process `TASK_FULLURL` should be unmodified, while the `TASK_CUSTOMREGISTRY` will resolve to using the public AWS ECR instead. 
+    Command error:
+      Unable to find image 'fastqc:0.11.9--0' locally
+      docker: Error response from daemon: pull access denied for fastqc, repository does not exist or may require 'docker login': denied: requested access to the resource is denied.
+      See 'docker run --help'.
 
-```
-nextflow run . -profile ecr
+    Work dir:
+      work/d2/684d8727f51e27c2c92a4fe10fedbf
 
-N E X T F L O W  ~  version 22.10.7
-Launching `./main.nf` [marvelous_coulomb] DSL2 - revision: cd3d6d6db3
-[9f/d22eba] Submitted process > TASK_FULLURL (1.task)
-[8b/bda89b] Submitted process > TASK_CUSTOMREGISTRY (1.task.custom)
-```
+    Tip: view the complete command output by changing to the process work dir and entering the command `cat .command.out`
 
-If we look inside images.txt, we can see that the CUSTOMREGISTRY has been resolved to using the AWS ECR container while the FULLURL has remained as quay.io:
+    -- Check '.nextflow.log' file for details
+    ```
 
-```
-TASK_CUSTOMREGISTRY,public.ecr.aws/biocontainers/fastqc:0.11.9--0
-TASK_FULLURL,quay.io/biocontainers/fastqc:0.11.9--0
-```
+- :white_check_mark: `nextflow run . --registry 'quay.io/biocontainers'`
+
+    This tests correctly downloads the container when `docker.registry = 'quay.io/biocontainers'`.
+
+    ```console
+    N E X T F L O W  ~  version 23.04.0
+    Launching `./main.nf` [kickass_miescher] DSL2 - revision: e19cf9f99d
+    executor >  local (1)
+    [65/e856af] process > ECHO_CONTAINER [100%] 1 of 1 ✔
+
+    docker.registry = quay.io/biocontainers
+    container uri = quay.io/biocontainers/fastqc:0.11.9--0
+    ```
+
+- :white_check_mark: `nextflow run . --registry 'public.ecr.aws/biocontainers'`
+
+    This tests correctly downloads the container when `docker.registry = 'public.ecr.aws/biocontainers'`.
+
+    ```console
+    N E X T F L O W  ~  version 23.04.0
+    Launching `./main.nf` [pensive_yonath] DSL2 - revision: e19cf9f99d
+    [12/4391f1] Submitted process > ECHO_CONTAINER
+
+    docker.registry = public.ecr.aws/biocontainers
+    container uri = public.ecr.aws/biocontainers/fastqc:0.11.9--0
+    ```
+
+- :white_check_mark: `nextflow run . -c custom.config`
+
+    This test uses the container definition defined in `custom.config` and overrides the path hard-coded in the pipeline as expected.
+
+    ```console
+    N E X T F L O W  ~  version 23.04.0
+    Launching `./main.nf` [lonely_northcutt] DSL2 - revision: e19cf9f99d
+    executor >  local (1)
+    [bb/993332] process > ECHO_CONTAINER [100%] 1 of 1 ✔
+
+    docker.registry = null
+    container uri = biocontainers/fastqc:v0.11.9_cv8
+    ```
