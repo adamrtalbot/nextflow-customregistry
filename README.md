@@ -1,4 +1,4 @@
-# Nextflow Custom Container Registry
+# Using docker.registry in nf-core pipelines
 
 This repo highlights how we can change the container definiton in nf-core modules to make them more flexible to other docker registries. At the moment, the full path to the container is hard-coded in the modules which means the only way to override this behaviour is by using a custom config file that overwrites the container definition for all processes in the pipeline.
 
@@ -97,3 +97,12 @@ The output from each of the commands in `run.sh` are listed below:
     docker.registry = null
     container uri = biocontainers/fastqc:v0.11.9_cv8
     ```
+
+## Implications for nf-core/modules
+
+In order to benefit from this approach we would need to:
+- Update all nf-core/modules to provide `<CONTAINER>:<TAG>` instead of `<REGISTRY>/<CONTAINER>:<TAG>` for any Docker containers specified in the process.
+- Add `docker.registry = 'quay.io/biocontainers'` as default to the `nextflow.config` in the pipeline.
+- Manually define any custom containers not coming from `quay.io/biocontainers` in the pipeline configuration i.e. `base.config`.
+- Update nf-core/tools where required e.g. module template, linting etc
+- These changes shouldn't have any impact on `nf-core download` because we will be leaving Singularity image paths unchanged in nf-core/modules.
