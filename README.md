@@ -45,7 +45,7 @@ The output from each of the commands in `run.sh` are listed below:
       (empty)
 
     Command error:
-      Unable to find image 'fastqc:0.11.9--0' locally
+      Unable to find image 'biocontainers/fastqc:0.11.9--0' locally
       docker: Error response from daemon: pull access denied for fastqc, repository does not exist or may require 'docker login': denied: requested access to the resource is denied.
       See 'docker run --help'.
 
@@ -57,9 +57,9 @@ The output from each of the commands in `run.sh` are listed below:
     -- Check '.nextflow.log' file for details
     ```
 
-- :white_check_mark: `nextflow run . --registry 'quay.io/biocontainers'`
+- :white_check_mark: `nextflow run . --registry 'quay.io'`
 
-    This tests correctly downloads the container when `docker.registry = 'quay.io/biocontainers'`.
+    This tests correctly downloads the container when `docker.registry = 'quay.io'`.
 
     ```console
     N E X T F L O W  ~  version 23.04.0
@@ -67,13 +67,13 @@ The output from each of the commands in `run.sh` are listed below:
     executor >  local (1)
     [65/e856af] process > ECHO_CONTAINER [100%] 1 of 1 ✔
 
-    docker.registry = quay.io/biocontainers
+    docker.registry = quay.io/
     container uri = quay.io/biocontainers/fastqc:0.11.9--0
     ```
 
-- :white_check_mark: `nextflow run . --registry 'public.ecr.aws/biocontainers'`
+- :white_check_mark: `nextflow run . --registry 'public.ecr.aws'`
 
-    This tests correctly downloads the container when `docker.registry = 'public.ecr.aws/biocontainers'`.
+    This tests correctly downloads the container when `docker.registry = 'public.ecr.aws'`.
 
     ```console
     N E X T F L O W  ~  version 23.04.0
