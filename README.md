@@ -4,6 +4,9 @@ This repo highlights how we can change the container definiton in nf-core module
 
 However, we can specify a custom container registry using the Nextflow config `docker.registry` option (default: `docker.io`). This behaves in the same way as the default container registry when running `docker pull`, i.e.:
 
+- `docker pull ubuntu:20.04` is automatically resolved to `docker pull docker.io/ubuntu:20.04`
+- `docker pull quay.io/biocontainers/fastqc:0.11.9--0` uses the URI `quay.io/biocontainers/fastqc:0.11.9--0`
+
 ## Repo contents
 
 - [main.nf](main.nf) contains a single process that prints the value of `docker.registry` and the resolved container path to stdout.
@@ -19,7 +22,7 @@ The output from each of the commands in `run.sh` are listed below:
 
 - :x: `nextflow run .`
 
-    This test is expected to fail because `docker.registry = null` by default and the container won't be found.
+    This test is expected to fail because `docker.registry = null` by default and the container won't be found at `docker.io/fastqc:0.11.9--0`, the default registry.
 
     ```console
     N E X T F L O W  ~  version 23.04.0
@@ -59,7 +62,7 @@ The output from each of the commands in `run.sh` are listed below:
 
 - :white_check_mark: `nextflow run . --registry 'quay.io/biocontainers'`
 
-    This tests correctly downloads the container when `docker.registry = 'quay.io/biocontainers'`.
+    This tests correctly downloads the container when `docker.registry = 'quay.io/biocontainers'` because the Docker registry is resolved to `quay.io/biocontainers/fastqc:0.11.9--0`.
 
     ```console
     N E X T F L O W  ~  version 23.04.0
