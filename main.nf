@@ -2,7 +2,7 @@ process ECHO_CONTAINER {
     debug true
     
     // container "quay.io/biocontainers/fastqc:0.11.9--0" // Current nf-core container definition
-    container "fastqc:0.11.9--0"
+    container "biocontainers/fastqc:0.11.9--0"
 
     """
     echo docker.registry = $params.registry
