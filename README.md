@@ -7,7 +7,7 @@ However, we can specify a custom container registry using the Nextflow config `d
 ## Repo contents
 
 - [main.nf](main.nf) contains a single process that prints the value of `docker.registry` and the resolved container path to stdout.
-- [nextflow.config](nextflow.config) initialises the appropriate settings for `docker`.
+- [nextflow.config](nextflow.config) includes profiles for `docker` and `podman` which initialises the appropriate settings.
 - [custom.config](custom.config) contains a process selector to highlight how we can override the default container used by the pipeline via custom configuration.
 - [run.sh](run.sh) contains a series of commands to show what happens when we use different permutations to change the default container used by the pipeline via different registries.
 
@@ -17,7 +17,7 @@ If you clone this repo locally and `cd` into it, you should just need to execute
 
 The output from each of the commands in `run.sh` are listed below:
 
-- :x: `nextflow run .`
+- :x: `nextflow run . -profile docker`
 
   This test is expected to fail because `docker.registry = null` by default and the container won't be found.
 
@@ -57,7 +57,7 @@ The output from each of the commands in `run.sh` are listed below:
   -- Check '.nextflow.log' file for details
   ```
 
-- :white_check_mark: `nextflow run . --registry 'quay.io/biocontainers'`
+- :white_check_mark: `nextflow run . -profile docker --registry 'quay.io/biocontainers'`
 
   This tests correctly downloads the container when `docker.registry = 'quay.io/biocontainers'`.
 
@@ -71,7 +71,7 @@ The output from each of the commands in `run.sh` are listed below:
   container uri = quay.io/biocontainers/fastqc:0.11.9--0
   ```
 
-- :white_check_mark: `nextflow run . --registry 'public.ecr.aws/biocontainers'`
+- :white_check_mark: `nextflow run . -profile docker --registry 'public.ecr.aws/biocontainers'`
 
   This tests correctly downloads the container when `docker.registry = 'public.ecr.aws/biocontainers'`.
 
@@ -84,7 +84,7 @@ The output from each of the commands in `run.sh` are listed below:
   container uri = public.ecr.aws/biocontainers/fastqc:0.11.9--0
   ```
 
-- :white_check_mark: `nextflow run . -c custom.config`
+- :white_check_mark: `nextflow run . -profile docker -c custom.config`
 
   This test uses the container definition defined in `custom.config` and overrides the path hard-coded in the pipeline as expected.
 
