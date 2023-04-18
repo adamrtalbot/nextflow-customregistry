@@ -96,6 +96,6 @@ The output from each of the commands in `run.sh` are listed below:
 In order to benefit from this approach we would need to:
 - Update all nf-core/modules to provide `<CONTAINER>:<TAG>` instead of `<REGISTRY>/<CONTAINER>:<TAG>` for any Docker containers specified in the process.
 - Add `docker.registry = 'quay.io'` as default to the `nextflow.config` in the pipeline.
-- Manually define any custom containers not coming from `quay.io` in the pipeline configuration i.e. `base.config`.
+- Manually define any custom containers not coming from `quay.io` in the pipeline configuration e.g. `base.config`.
 - Update nf-core/tools where required e.g. module template, linting etc
 - These changes shouldn't have any impact on `nf-core download` because we will be leaving Singularity image paths unchanged in nf-core/modules.
