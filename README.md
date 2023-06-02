@@ -25,13 +25,10 @@ The output from each of the commands in `run.sh` are listed below:
     This test is expected to fail because `docker.registry = null` by default and the container won't be found at `docker.io/fastqc:0.11.9--0`, the default registry.
 
     ```console
-    N E X T F L O W  ~  version 23.04.0
-    Launching `./main.nf` [chaotic_torricelli] DSL2 - revision: e19cf9f99d
-    executor >  local (1)
-    [d2/684d87] process > ECHO_CONTAINER [  0%] 0 of 1
-    executor >  local (1)
-    [d2/684d87] process > ECHO_CONTAINER [100%] 1 of 1, failed: 1 ✘
-    ERROR ~ Error executing process > 'ECHO_CONTAINER'
+    N E X T F L O W  ~  version 22.10.7
+    Launching `./main.nf` [clever_panini] DSL2 - revision: 587ccc8122
+    [96/399f40] Submitted process > ECHO_CONTAINER
+    Error executing process > 'ECHO_CONTAINER'
 
     Caused by:
       Process `ECHO_CONTAINER` terminated with an error exit status (125)
@@ -39,7 +36,7 @@ The output from each of the commands in `run.sh` are listed below:
     Command executed:
 
       echo docker.registry = null
-      echo container uri   = $(grep 'docker run' .command.run | tr ' ' '\n' | grep fastqc:0.11.9--0)
+      echo container uri   = $(grep 'docker run' .command.run | tr ' ' '\n' | grep biocontainers/fastqc:0.11.9--0)
 
     Command exit status:
       125
@@ -48,42 +45,39 @@ The output from each of the commands in `run.sh` are listed below:
       (empty)
 
     Command error:
-      Unable to find image 'fastqc:0.11.9--0' locally
-      docker: Error response from daemon: pull access denied for fastqc, repository does not exist or may require 'docker login': denied: requested access to the resource is denied.
+      Unable to find image 'biocontainers/fastqc:0.11.9--0' locally
+      docker: Error response from daemon: manifest for biocontainers/fastqc:0.11.9--0 not found: manifest unknown: manifest unknown.
       See 'docker run --help'.
 
     Work dir:
-      work/d2/684d8727f51e27c2c92a4fe10fedbf
+      work/96/399f403e65c7181c5c793d138f9792
 
-    Tip: view the complete command output by changing to the process work dir and entering the command `cat .command.out`
-
-    -- Check '.nextflow.log' file for details
+    Tip: you can replicate the issue by changing to the process work dir and entering the command `bash .command.run`
     ```
 
-- :white_check_mark: `nextflow run . --registry 'quay.io/biocontainers'`
+- :white_check_mark: `nextflow run . --registry 'quay.io'`
 
     This tests correctly downloads the container when `docker.registry = 'quay.io/biocontainers'` because the Docker registry is resolved to `quay.io/biocontainers/fastqc:0.11.9--0`.
 
     ```console
-    N E X T F L O W  ~  version 23.04.0
-    Launching `./main.nf` [kickass_miescher] DSL2 - revision: e19cf9f99d
-    executor >  local (1)
-    [65/e856af] process > ECHO_CONTAINER [100%] 1 of 1 ✔
+    N E X T F L O W  ~  version 22.10.7
+    Launching `./main.nf` [curious_pasteur] DSL2 - revision: 587ccc8122
+    [1e/a2af04] Submitted process > ECHO_CONTAINER
 
-    docker.registry = quay.io/biocontainers
+    docker.registry = quay.io
     container uri = quay.io/biocontainers/fastqc:0.11.9--0
     ```
 
-- :white_check_mark: `nextflow run . --registry 'public.ecr.aws/biocontainers'`
+- :white_check_mark: `nextflow run . --registry 'public.ecr.aws'`
 
-    This tests correctly downloads the container when `docker.registry = 'public.ecr.aws/biocontainers'`.
+    This tests correctly downloads the container when `docker.registry = 'public.ecr.aws'`.
 
     ```console
-    N E X T F L O W  ~  version 23.04.0
-    Launching `./main.nf` [pensive_yonath] DSL2 - revision: e19cf9f99d
-    [12/4391f1] Submitted process > ECHO_CONTAINER
+    N E X T F L O W  ~  version 22.10.7
+    Launching `./main.nf` [sleepy_euclid] DSL2 - revision: 587ccc8122
+    [44/241e55] Submitted process > ECHO_CONTAINER
 
-    docker.registry = public.ecr.aws/biocontainers
+    docker.registry = public.ecr.aws
     container uri = public.ecr.aws/biocontainers/fastqc:0.11.9--0
     ```
 
@@ -92,10 +86,9 @@ The output from each of the commands in `run.sh` are listed below:
     This test uses the container definition defined in `custom.config` and overrides the path hard-coded in the pipeline as expected.
 
     ```console
-    N E X T F L O W  ~  version 23.04.0
-    Launching `./main.nf` [lonely_northcutt] DSL2 - revision: e19cf9f99d
-    executor >  local (1)
-    [bb/993332] process > ECHO_CONTAINER [100%] 1 of 1 ✔
+    N E X T F L O W  ~  version 22.10.7
+    Launching `./main.nf` [disturbed_gates] DSL2 - revision: 587ccc8122
+    [fc/394cc1] Submitted process > ECHO_CONTAINER
 
     docker.registry = null
     container uri = biocontainers/fastqc:v0.11.9_cv8
@@ -105,7 +98,7 @@ The output from each of the commands in `run.sh` are listed below:
 
 In order to benefit from this approach we would need to:
 - Update all nf-core/modules to provide `<CONTAINER>:<TAG>` instead of `<REGISTRY>/<CONTAINER>:<TAG>` for any Docker containers specified in the process.
-- Add `docker.registry = 'quay.io/biocontainers'` as default to the `nextflow.config` in the pipeline.
-- Manually define any custom containers not coming from `quay.io/biocontainers` in the pipeline configuration i.e. `base.config`.
+- Add `docker.registry = 'quay.io'` as default to the `nextflow.config` in the pipeline.
+- Manually define any custom containers not coming from `quay.io` in the pipeline configuration e.g. `base.config`.
 - Update nf-core/tools where required e.g. module template, linting etc
 - These changes shouldn't have any impact on `nf-core download` because we will be leaving Singularity image paths unchanged in nf-core/modules.
